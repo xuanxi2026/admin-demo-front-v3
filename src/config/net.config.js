@@ -1,12 +1,19 @@
 /**
  * @description 导出默认网路配置
  **/
+const isLocalDev =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "127.0.0.1" ||
+    window.location.hostname === "localhost");
+
+const runtimeApiBase =
+  typeof window !== "undefined" ? window.__VAB_API_BASE_URL__ : "";
+
 const network = {
-  // 默认的接口地址 如果是开发环境和生产环境走vab-mock-server，当然你也可以选择自己配置成需要的接口地址
+  // 本地开发默认直连8889；也可在 index.html 注入 window.__VAB_API_BASE_URL__ 覆盖
   baseURL:
-    process.env.NODE_ENV === "production"
-      ? "./vab-mock-server"
-      : "/vab-mock-server",
+    runtimeApiBase ||
+    (isLocalDev ? "http://127.0.0.1:8889/api" : "/api"),
   //配后端数据的接收方式application/json;charset=UTF-8或者application/x-www-form-urlencoded;charset=UTF-8
   contentType: "application/json;charset=UTF-8",
   //消息框消失时间
@@ -16,8 +23,8 @@ const network = {
   //操作正常code，支持String、Array、int多种类型
   successCode: [200, 0],
   //登录失效code
-  invalidCode: 402,
+  invalidCode: 40102,
   //无权限code
-  noPermissionCode: 401,
+  noPermissionCode: 40301,
 };
 module.exports = network;

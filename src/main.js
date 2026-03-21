@@ -12,6 +12,12 @@ import eventBus from "@/utils/eventBus";
 import { title } from "@/config";
 // 导入mock
 import { mockXHR } from "@/utils/static";
+import {
+  baseMessage,
+  baseConfirm,
+  baseAlert,
+  baseNotify,
+} from "@/utils/message";
 
 /**
  * @author https://github.com/zxwk1998/vue-admin-better （不想保留author可删除）
@@ -37,6 +43,12 @@ app.config.globalProperties.$eventBus = eventBus;
 
 // 添加全局标题
 app.config.globalProperties.$baseTitle = title;
+
+// 添加全局消息方法
+app.config.globalProperties.$baseMessage = baseMessage;
+app.config.globalProperties.$baseConfirm = baseConfirm;
+app.config.globalProperties.$baseAlert = baseAlert;
+app.config.globalProperties.$baseNotify = baseNotify;
 
 // 使全局属性在window上也可用
 window.$eventBus = eventBus;

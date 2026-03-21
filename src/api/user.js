@@ -1,7 +1,11 @@
 import request from "@/utils/request";
-import { tokenName } from "@/config";
+import { encryptedData } from "@/utils/encrypt";
+import { loginRSA, tokenName } from "@/config";
 
 export async function login(data) {
+  if (loginRSA) {
+    data = await encryptedData(data);
+  }
   return request({
     url: "/login",
     method: "post",
@@ -26,9 +30,55 @@ export function logout() {
   });
 }
 
-export function register() {
+export function register(data) {
   return request({
     url: "/register",
     method: "post",
+    data,
+  });
+}
+
+export function getProfile() {
+  return request({
+    url: "/profile",
+    method: "get",
+  });
+}
+
+export function updateProfile(data) {
+  return request({
+    url: "/profile",
+    method: "put",
+    data,
+  });
+}
+
+export function setupGoogleAuth() {
+  return request({
+    url: "/auth/google/setup",
+    method: "get",
+  });
+}
+
+export function bindGoogleAuth(data) {
+  return request({
+    url: "/auth/google/bind",
+    method: "post",
+    data,
+  });
+}
+
+export function unbindGoogleAuth(data) {
+  return request({
+    url: "/auth/google/unbind",
+    method: "post",
+    data,
+  });
+}
+
+export function getMyPermissions() {
+  return request({
+    url: "/rbac/permissions",
+    method: "get",
   });
 }

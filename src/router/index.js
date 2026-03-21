@@ -325,6 +325,56 @@ export const asyncRoutes = [
   },
 
   {
+    path: "/personnelManagement",
+    component: Layout,
+    redirect: "noRedirect",
+    name: "PersonnelManagement",
+    meta: { title: "配置", icon: "user-cog", permissions: ["admin"] },
+    children: [
+      {
+        path: "userManagement",
+        name: "UserManagement",
+        component: () => import("@/views/personnelManagement/userManagement/index.vue"),
+        meta: { title: "用户管理", icon: "users" },
+      },
+      {
+        path: "roleManagement",
+        name: "RoleManagement",
+        component: () => import("@/views/personnelManagement/roleManagement/index.vue"),
+        meta: { title: "角色管理", icon: "user-shield" },
+      },
+      {
+        path: "menuManagement",
+        name: "MenuManagement",
+        component: () => import("@/views/personnelManagement/menuManagement/index.vue"),
+        meta: { title: "菜单管理", icon: "bars", badge: "New" },
+      },
+    ],
+  },
+  {
+    path: "/fileManagement",
+    component: Layout,
+    redirect: "/fileManagement/index",
+    name: "FileManagement",
+    meta: {
+      title: "文件资源管理",
+      icon: "folder-open",
+      permissions: ["admin", "editor"],
+      badge: "New",
+    },
+    children: [
+      {
+        path: "index",
+        name: "FileManagementIndex",
+        component: () => import("@/views/fileManagement/index.vue"),
+        meta: {
+          title: "文件资源管理",
+          icon: "folder-open",
+        },
+      },
+    ],
+  },
+  {
     path: "/external-store",
     component: Layout,
     meta: {
