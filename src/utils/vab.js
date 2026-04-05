@@ -96,6 +96,7 @@ export const faToElIcon = (icon) => {
     tablet: "Cellphone",
     lock: "Lock",
     shield: "Shield",
+    "user-shield": "UserFilled",
     "exclamation-triangle": "Warning",
     "exclamation-circle": "Warning",
     "question-circle": "QuestionFilled",
