@@ -5,7 +5,9 @@
       :class="{ 'horizontal-layout': isHorizontalLayout }"
     >
       <div class="avatar-wrapper">
-        <img :src="avatar" alt="用户头像" class="user-avatar" />
+        <el-badge :hidden="unreadCount <= 0" :value="badgeValue" class="avatar-badge">
+          <img :src="avatar" alt="用户头像" class="user-avatar" />
+        </el-badge>
       </div>
       <div class="user-info">
         <div class="username">{{ username }}</div>
@@ -40,7 +42,10 @@
         <el-dropdown-item command="notification" class="dropdown-item">
           <!-- 直接使用图标组件 -->
           <Link class="dropdown-icon" />
-          <span>通知中心</span>
+          <span class="notification-label">
+            <span>通知中心</span>
+            <el-badge :hidden="unreadCount <= 0" :value="badgeValue" />
+          </span>
         </el-dropdown-item>
 
         <el-divider></el-divider>
@@ -56,11 +61,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { useStore } from "vuex";
 import { useRouter, useRoute } from "vue-router";
 import { recordRoute } from "@/config";
 import { getProfile } from "@/api/user";
+import { NOTICE_EVENT, fetchPublishedNotifications } from "@/utils/noticeCenter";
 import {
   ArrowDown,
   User,
@@ -87,6 +93,8 @@ const profile = reactive({
   nickname: "",
   email: "",
 });
+const unreadCount = ref(0);
+const badgeValue = computed(() => (unreadCount.value > 99 ? "99+" : unreadCount.value));
 
 const fetchProfile = async () => {
   try {
@@ -98,8 +106,31 @@ const fetchProfile = async () => {
   }
 };
 
+const fetchUnreadCount = async () => {
+  try {
+    const { unreadCount: count } = await fetchPublishedNotifications();
+    unreadCount.value = count;
+  } catch (error) {
+    console.error("load unread count failed", error);
+  }
+};
+
+const handleNoticeChange = (payload = {}) => {
+  if (typeof payload.unreadCount === "number") {
+    unreadCount.value = payload.unreadCount;
+    return;
+  }
+  fetchUnreadCount();
+};
+
 onMounted(() => {
   fetchProfile();
+  fetchUnreadCount();
+  window.$eventBus.on(NOTICE_EVENT, handleNoticeChange);
+});
+
+onBeforeUnmount(() => {
+  window.$eventBus.off(NOTICE_EVENT, handleNoticeChange);
 });
 
 // 方法
@@ -161,6 +192,13 @@ const logout = () => {
   .avatar-wrapper {
     position: relative;
     margin-right: 12px;
+
+    .avatar-badge {
+      :deep(.el-badge__content) {
+        top: 4px;
+        right: 10px;
+      }
+    }
 
     .user-avatar {
       width: 40px;
@@ -245,11 +283,20 @@ const logout = () => {
   .dropdown-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 6px 12px;
     transition: background-color 0.2s;
 
     &.logout-item {
       color: #f56c6c;
+    }
+
+    .notification-label {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
   }
 

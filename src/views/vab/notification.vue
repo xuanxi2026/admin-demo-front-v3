@@ -120,9 +120,13 @@
 </template>
 
 <script>
-import { getPublishedNotices } from "@/api/noticeManagement";
-
-const NOTICE_READ_KEY = "admin-demo-notice-read-ids";
+import {
+  NOTICE_EVENT,
+  emitNoticeChange,
+  fetchPublishedNotifications,
+  loadReadIds as readNoticeIds,
+  persistReadIds as saveNoticeReadIds,
+} from "@/utils/noticeCenter";
 
 export default {
   name: "Notification",
@@ -140,6 +144,10 @@ export default {
   created() {
     this.readIds = this.loadReadIds();
     this.refreshNotifications();
+    window.$eventBus.on(NOTICE_EVENT, this.handleNoticeChange);
+  },
+  beforeUnmount() {
+    window.$eventBus.off(NOTICE_EVENT, this.handleNoticeChange);
   },
   computed: {
     filteredNotifications() {
@@ -157,27 +165,10 @@ export default {
   },
   methods: {
     loadReadIds() {
-      try {
-        const raw = localStorage.getItem(NOTICE_READ_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (error) {
-        return [];
-      }
+      return readNoticeIds();
     },
     persistReadIds() {
-      localStorage.setItem(NOTICE_READ_KEY, JSON.stringify(this.readIds));
-    },
-    buildNotifications(rows = []) {
-      return rows.map((item) => ({
-        id: item.id,
-        title: item.title,
-        content: item.content,
-        sender: item.publisher || "系统公告",
-        date: item.datatime,
-        level: item.level,
-        status: item.status,
-        read: this.readIds.includes(item.id),
-      }));
+      saveNoticeReadIds(this.readIds);
     },
     resolveTabItems(tab) {
       if (tab === "unread") return this.unreadNotifications;
@@ -205,6 +196,7 @@ export default {
           this.persistReadIds();
         }
         this.totalNotifications = this.resolveTabItems(this.activeTab).length;
+        emitNoticeChange({ unreadCount: this.unreadNotifications.length });
         this.$message.success("已标记为已读");
       }
     },
@@ -215,14 +207,21 @@ export default {
         this.readIds = this.readIds.filter((id) => id !== notification.id);
         this.persistReadIds();
         this.totalNotifications = this.resolveTabItems(this.activeTab).length;
+        emitNoticeChange({ unreadCount: this.unreadNotifications.length });
         this.$message.success("已标记为未读");
       }
     },
-    async refreshNotifications() {
+    async handleNoticeChange(payload = {}) {
+      if (typeof payload.unreadCount === "number") return;
+      this.readIds = this.loadReadIds();
+      await this.refreshNotifications({ silent: true });
+    },
+    async refreshNotifications(options = {}) {
       this.loading = true;
       try {
-        const { data } = await getPublishedNotices({ pageSize: 50 });
-        this.notifications = this.buildNotifications(data || []);
+        const { notifications, unreadCount } = await fetchPublishedNotifications();
+        this.readIds = this.loadReadIds();
+        this.notifications = notifications;
         this.totalNotifications = this.resolveTabItems(this.activeTab).length;
         const currentNoticeId = Number(this.$route.query.noticeId);
         if (currentNoticeId) {
@@ -231,7 +230,8 @@ export default {
             this.markAsRead(target);
           }
         }
-        this.$message.success("刷新成功");
+        emitNoticeChange({ unreadCount });
+        if (!options.silent) this.$message.success("刷新成功");
       } catch (error) {
         this.$message.error("刷新失败");
       } finally {
