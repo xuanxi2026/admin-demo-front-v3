@@ -2,6 +2,20 @@
   <div class="index-container">
     <el-row :gutter="20">
       <el-col :lg="24" :md="24" :sm="24" :xl="24" :xs="24">
+        <el-card class="site-hero-card" shadow="never">
+          <div class="site-hero">
+            <div>
+              <div class="site-hero__eyebrow">站点概览</div>
+              <div class="site-hero__title">{{ siteInfo.siteName || "Admin Demo" }}</div>
+              <div class="site-hero__desc">{{ siteInfo.description || "可复用后台管理系统基座" }}</div>
+            </div>
+            <el-tag :type="siteInfo.maintenanceMode ? 'warning' : 'success'" effect="light">
+              {{ siteInfo.maintenanceMode ? "维护模式" : "运行中" }}
+            </el-tag>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :lg="24" :md="24" :sm="24" :xl="24" :xs="24">
         <el-alert v-if="noticeList">
           <div
             style="display: flex; align-items: center; justify-content: center"
@@ -294,6 +308,7 @@ import VabChart from "@/plugins/echarts";
 import { dependencies, devDependencies } from "../../../package.json";
 import { getNoticeList } from "@/api/notice";
 import { random } from "lodash-es";
+import { SITE_SETTINGS_EVENT, getRuntimeDescription, getRuntimeMaintenanceMode, getRuntimeTitle } from "@/utils/siteSettings";
 import {
   View,
   ArrowUp,
@@ -337,6 +352,11 @@ export default {
       nodeEnv: process.env.NODE_ENV,
       dependencies: dependencies,
       devDependencies: devDependencies,
+      siteInfo: {
+        siteName: getRuntimeTitle(),
+        description: getRuntimeDescription(),
+        maintenanceMode: getRuntimeMaintenanceMode(),
+      },
       config1: {
         startVal: 0,
         endVal: random(20000, 60000),
@@ -812,6 +832,7 @@ export default {
   },
   beforeDestroy() {
     clearInterval(this.timer);
+    window.$eventBus?.off(SITE_SETTINGS_EVENT, this.handleSiteSettingsChange);
   },
   mounted() {
     let base = +new Date(2020, 1, 1);
@@ -845,8 +866,16 @@ export default {
       this.fwl.xAxis[0].data = date;
       this.fwl.series[0].data = data;
     }, 3000);
+    window.$eventBus?.on(SITE_SETTINGS_EVENT, this.handleSiteSettingsChange);
   },
   methods: {
+    handleSiteSettingsChange(settings = {}) {
+      this.siteInfo = {
+        siteName: settings.siteName || getRuntimeTitle(),
+        description: settings.description || getRuntimeDescription(),
+        maintenanceMode: !!settings.maintenanceMode,
+      };
+    },
     handleClick(e) {
       this.$baseMessage(`点击了${e.name},这里可以写跳转`);
     },
@@ -1574,6 +1603,35 @@ export default {
       }
     }
   }
+}
+
+.site-hero-card {
+  margin-bottom: 15px;
+}
+
+.site-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.site-hero__eyebrow {
+  color: #909399;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.site-hero__title {
+  margin-top: 6px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.site-hero__desc {
+  margin-top: 8px;
+  color: #606266;
+  line-height: 1.7;
 }
 
 // 动画

@@ -20,6 +20,16 @@
         </div>
       </div>
       <div class="vab-main main-padding">
+        <el-alert
+          v-if="siteSettings.maintenanceMode"
+          class="global-maintenance-alert"
+          :closable="false"
+          title="系统当前处于维护模式"
+          type="warning"
+          show-icon
+        >
+          {{ siteSettings.description || "维护期间部分功能可能受限，请关注通知公告。" }}
+        </el-alert>
         <vab-ad />
         <vab-app-main />
       </div>
@@ -43,6 +53,16 @@
           <vab-nav />
           <vab-tabs v-if="tabsBar === 'true' || tabsBar === true" />
         </div>
+        <el-alert
+          v-if="siteSettings.maintenanceMode"
+          class="global-maintenance-alert"
+          :closable="false"
+          title="系统当前处于维护模式"
+          type="warning"
+          show-icon
+        >
+          {{ siteSettings.description || "维护期间部分功能可能受限，请关注通知公告。" }}
+        </el-alert>
         <vab-ad />
         <vab-app-main />
       </div>
@@ -55,12 +75,17 @@
 import { ref, computed, onBeforeMount, onBeforeUnmount, onMounted, nextTick } from "vue";
 import { useStore } from "vuex";
 import { tokenName } from "@/config";
+import { SITE_SETTINGS_EVENT, getRuntimeDescription, getRuntimeMaintenanceMode, refreshSiteSettings } from "@/utils/siteSettings";
 
 const store = useStore();
 
 const oldLayout = ref("");
 const controller = ref(new window.AbortController());
 let timeOutID = null;
+const siteSettings = ref({
+  description: getRuntimeDescription(),
+  maintenanceMode: getRuntimeMaintenanceMode(),
+});
 
 const layout = computed(() => store.getters["settings/layout"]);
 const tabsBar = computed(() => store.getters["settings/tabsBar"]);
@@ -76,6 +101,13 @@ const classObj = computed(() => {
 
 const handleFoldSideBar = () => {
   store.dispatch("settings/foldSideBar");
+};
+
+const handleSiteSettingsChange = (settings = {}) => {
+  siteSettings.value = {
+    description: settings.description || "",
+    maintenanceMode: !!settings.maintenanceMode,
+  };
 };
 
 const handleIsMobile = () => {
@@ -132,12 +164,15 @@ const handleVisibilityChange = () => {
 };
 
 onMounted(() => {
+  refreshSiteSettings().catch(() => {});
+  window.$eventBus?.on(SITE_SETTINGS_EVENT, handleSiteSettingsChange);
   window.addEventListener('beforeunload', handleBeforeUnload);
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
+  window.$eventBus?.off(SITE_SETTINGS_EVENT, handleSiteSettingsChange);
   window.removeEventListener('beforeunload', handleBeforeUnload);
   document.removeEventListener('visibilitychange', handleVisibilityChange);
   controller.value.abort();
@@ -192,6 +227,10 @@ nextTick(() => {
   position: relative;
   width: 100%;
   height: 100%;
+
+  .global-maintenance-alert {
+    margin: $base-padding $base-padding 0;
+  }
 
   .layout-container-horizontal {
     position: relative;

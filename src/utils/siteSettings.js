@@ -21,9 +21,29 @@ export function getRuntimeLogo() {
   return readSiteSettings().logo || "";
 }
 
+export function getRuntimeDescription() {
+  return readSiteSettings().description || "";
+}
+
+export function getRuntimeMaintenanceMode() {
+  return !!readSiteSettings().maintenanceMode;
+}
+
+function syncMetaDescription(description = "") {
+  if (typeof document === "undefined") return;
+  let meta = document.querySelector('meta[name="description"]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("name", "description");
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute("content", description || "可复用后台管理系统基座");
+}
+
 export function applySiteSettings(settings = {}) {
   localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(settings));
   window.$baseTitle = settings.siteName || defaultTitle;
+  syncMetaDescription(settings.description);
   window.$eventBus?.emit(SITE_SETTINGS_EVENT, settings);
 }
 
