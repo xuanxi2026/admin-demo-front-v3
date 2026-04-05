@@ -357,6 +357,12 @@ export const asyncRoutes = [
         meta: { title: "部门管理", icon: "sitemap" },
       },
       {
+        path: "noticeManagement",
+        name: "NoticeManagement",
+        component: () => import("@/views/personnelManagement/noticeManagement/index.vue"),
+        meta: { title: "通知公告", icon: "bullhorn" },
+      },
+      {
         path: "dictManagement",
         name: "DictManagement",
         component: () => import("@/views/personnelManagement/dictManagement/index.vue"),
