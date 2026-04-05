@@ -4,11 +4,11 @@
       <el-alert
         title="嵌套路由 - 一级菜单"
         type="info"
-        description="您当前在 /vab/nested/menu1 路径下"
+        description="您当前在 /examples/nested/menu1 路径下"
       />
       
       <div style="margin-top: 20px">
-        <el-button type="primary" @click="$router.push('/vab/nested/menu1/menu2')">
+        <el-button type="primary" @click="$router.push('/examples/nested/menu1/menu2')">
           进入二级菜单
         </el-button>
       </div>

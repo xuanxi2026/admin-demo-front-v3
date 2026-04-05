@@ -232,14 +232,14 @@ export default {
       const url =
         "https://github.com/zxwk1998/vue-admin-better/tree/master/src/views";
       let path = this.$route.path + "/index.vue";
-      if (path === "/vab/menu1/menu1-1/menu1-1-1/index.vue") {
-        path = "/vab/nested/menu1/menu1-1/menu1-1-1/index.vue";
+      if (path === "/examples/menu1/menu1-1/menu1-1-1/index.vue") {
+        path = "/examples/nested/menu1/menu1-1/menu1-1-1/index.vue";
       }
-      if (path === "/vab/icon/awesomeIcon/index.vue") {
-        path = "/vab/icon/index.vue";
+      if (path === "/examples/icon/awesomeIcon/index.vue") {
+        path = "/examples/icon/index.vue";
       }
-      if (path === "/vab/icon/colorfulIcon/index.vue") {
-        path = "/vab/icon/colorfulIcon.vue";
+      if (path === "/examples/icon/colorfulIcon/index.vue") {
+        path = "/examples/icon/colorfulIcon.vue";
       }
       window.open(url + path);
     },

@@ -1,33 +1,7 @@
 <template>
   <el-dialog v-model="dialogFormVisible" :title="title" width="500px" @close="close">
     <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-      <el-form-item label="name" prop="name">
-        <el-input v-model="form.name" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="路径" prop="path">
-        <el-input v-model="form.path" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="vue文件路径" prop="component">
-        <el-input v-model="form.component" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="标题" prop="title">
-        <el-input v-model="form.meta.title" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="图标" prop="icon">
-        <el-input v-model="form.meta.icon" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="是否隐藏">
-        <el-switch v-model="form.hidden" />
-      </el-form-item>
-      <el-form-item label="是否一直显示">
-        <el-switch v-model="form.alwaysShow" />
-      </el-form-item>
-      <el-form-item label="是否固定">
-        <el-switch v-model="form.meta.affix" />
-      </el-form-item>
-      <el-form-item label="是否无缓存">
-        <el-switch v-model="form.meta.noKeepAlive" />
-      </el-form-item>
+      <schema-form-fields :fields="fields" :form="form" />
     </el-form>
     <template #footer>
       <el-button @click="close">取 消</el-button>
@@ -37,94 +11,72 @@
 </template>
 
 <script>
-import { ref, reactive } from "vue";
+import { useEditDialog } from "@/composables/useEditDialog";
 import { doEdit } from "@/api/menuManagement";
-import { ElMessage } from "element-plus";
+import SchemaFormFields from "@/components/SchemaFormFields.vue";
 
 export default {
   name: "MenuManagementEdit",
   emits: ["fetch-data"],
+  components: {
+    SchemaFormFields,
+  },
   setup(props, { emit }) {
-    const formRef = ref(null);
-    const dialogFormVisible = ref(false);
-    const title = ref("");
-    const form = reactive({
-      id: "",
-      name: "",
-      path: "",
-      component: "",
-      hidden: false,
-      alwaysShow: false,
-      meta: {
-        title: "",
-        icon: "",
-        affix: false,
-        noKeepAlive: false,
-      },
-    });
-
+    const fields = [
+      { type: "input", label: "name", prop: "name" },
+      { type: "input", label: "路径", prop: "path" },
+      { type: "input", label: "vue文件路径", prop: "component" },
+      { type: "input", label: "标题", prop: "meta.title" },
+      { type: "input", label: "图标", prop: "meta.icon" },
+      { type: "switch", label: "是否隐藏", prop: "hidden" },
+      { type: "switch", label: "是否一直显示", prop: "alwaysShow" },
+      { type: "switch", label: "是否固定", prop: "meta.affix" },
+      { type: "switch", label: "是否无缓存", prop: "meta.noKeepAlive" },
+    ];
     const rules = {
       name: [{ required: true, trigger: "blur", message: "请输入name" }],
       path: [{ required: true, trigger: "blur", message: "请输入路径" }],
       "meta.title": [{ required: true, trigger: "blur", message: "请输入标题" }],
     };
-
-    const showEdit = (row) => {
-      if (row && row.path) {
-        title.value = "编辑";
-        form.id = row.id || "";
-        form.name = row.name || "";
-        form.path = row.path || "";
-        form.component = row.component || "";
-        form.hidden = row.hidden || false;
-        form.alwaysShow = row.alwaysShow || false;
-        form.meta.title = row.meta?.title || "";
-        form.meta.icon = row.meta?.icon || "";
-        form.meta.affix = row.meta?.affix || false;
-        form.meta.noKeepAlive = row.meta?.noKeepAlive || false;
-      } else {
-        title.value = "添加";
-        form.id = "";
-        form.name = "";
-        form.path = "";
-        form.component = "";
-        form.hidden = false;
-        form.alwaysShow = false;
-        form.meta.title = "";
-        form.meta.icon = "";
-        form.meta.affix = false;
-        form.meta.noKeepAlive = false;
-      }
-      dialogFormVisible.value = true;
-    };
-
-    const close = () => {
-      formRef.value?.resetFields();
-      dialogFormVisible.value = false;
-    };
-
-    const save = async () => {
-      formRef.value.validate(async (valid) => {
-        if (valid) {
-          const { msg } = await doEdit(form);
-          ElMessage.success(msg);
-          emit("fetch-data");
-          close();
-        } else {
-          return false;
-        }
-      });
-    };
+    const dialog = useEditDialog(
+      {
+        createEmptyForm: () => ({
+          id: "",
+          name: "",
+          path: "",
+          component: "",
+          hidden: false,
+          alwaysShow: false,
+          meta: {
+            title: "",
+            icon: "",
+            affix: false,
+            noKeepAlive: false,
+          },
+        }),
+        buildEditForm: (row) => ({
+          id: row.id || "",
+          name: row.name || "",
+          path: row.path || "",
+          component: row.component || "",
+          hidden: row.hidden || false,
+          alwaysShow: row.alwaysShow || false,
+          meta: {
+            title: row.meta?.title || "",
+            icon: row.meta?.icon || "",
+            affix: row.meta?.affix || false,
+            noKeepAlive: row.meta?.noKeepAlive || false,
+          },
+        }),
+        saveFn: doEdit,
+      },
+      emit
+    );
 
     return {
-      formRef,
-      dialogFormVisible,
-      title,
-      form,
+      ...dialog,
+      fields,
       rules,
-      showEdit,
-      close,
-      save,
     };
   },
 };

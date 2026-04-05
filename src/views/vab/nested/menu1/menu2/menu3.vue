@@ -4,11 +4,11 @@
       <el-alert
         title="嵌套路由 - 三级菜单"
         type="error"
-        description="您当前在 /vab/nested/menu1/menu2/menu3 路径下，这是最深层的嵌套路由"
+        description="您当前在 /examples/nested/menu1/menu2/menu3 路径下，这是最深层的嵌套路由"
       />
       
       <div style="margin-top: 20px">
-        <el-button type="primary" @click="$router.push('/vab/nested')">
+        <el-button type="primary" @click="$router.push('/examples/nested')">
           返回顶层
         </el-button>
       </div>

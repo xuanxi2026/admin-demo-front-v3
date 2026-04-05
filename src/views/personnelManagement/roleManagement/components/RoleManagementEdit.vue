@@ -1,9 +1,7 @@
 <template>
   <el-dialog v-model="dialogFormVisible" :title="title" width="500px" @close="close">
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="权限码" prop="permission">
-        <el-input v-model="form.permission" autocomplete="off" />
-      </el-form-item>
+      <schema-form-fields :fields="fields" :form="form" />
     </el-form>
     <template #footer>
       <el-button @click="close">取 消</el-button>
@@ -13,66 +11,40 @@
 </template>
 
 <script>
-import { ref, reactive } from "vue";
+import { useEditDialog } from "@/composables/useEditDialog";
 import { doEdit } from "@/api/roleManagement";
-import { ElMessage } from "element-plus";
+import SchemaFormFields from "@/components/SchemaFormFields.vue";
 
 export default {
   name: "RoleManagementEdit",
   emits: ["fetch-data"],
+  components: {
+    SchemaFormFields,
+  },
   setup(props, { emit }) {
-    const formRef = ref(null);
-    const dialogFormVisible = ref(false);
-    const title = ref("");
-    const form = reactive({
-      id: "",
-      permission: "",
-    });
-
+    const fields = [{ type: "input", label: "权限码", prop: "permission" }];
     const rules = {
       permission: [{ required: true, trigger: "blur", message: "请输入权限码" }],
     };
-
-    const showEdit = (row) => {
-      if (row && row.id) {
-        title.value = "编辑";
-        form.id = row.id;
-        form.permission = row.permission;
-      } else {
-        title.value = "添加";
-        form.id = "";
-        form.permission = "";
-      }
-      dialogFormVisible.value = true;
-    };
-
-    const close = () => {
-      formRef.value?.resetFields();
-      dialogFormVisible.value = false;
-    };
-
-    const save = async () => {
-      formRef.value.validate(async (valid) => {
-        if (valid) {
-          const { msg } = await doEdit(form);
-          ElMessage.success(msg);
-          emit("fetch-data");
-          close();
-        } else {
-          return false;
-        }
-      });
-    };
+    const dialog = useEditDialog(
+      {
+        createEmptyForm: () => ({
+          id: "",
+          permission: "",
+        }),
+        buildEditForm: (row) => ({
+          id: row.id,
+          permission: row.permission || "",
+        }),
+        saveFn: doEdit,
+      },
+      emit
+    );
 
     return {
-      formRef,
-      dialogFormVisible,
-      title,
-      form,
+      ...dialog,
+      fields,
       rules,
-      showEdit,
-      close,
-      save,
     };
   },
 };

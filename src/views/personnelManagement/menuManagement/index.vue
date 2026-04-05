@@ -15,11 +15,7 @@
         />
       </el-col>
       <el-col :lg="20" :md="16" :sm="24" :xl="20" :xs="24">
-        <div class="query-form">
-          <el-button type="primary" @click="handleEdit">
-            <el-icon><Plus /></el-icon> 添加
-          </el-button>
-        </div>
+        <crud-toolbar show-create @create="handleEdit" />
         <el-table
           v-loading="listLoading"
           border
@@ -81,109 +77,37 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from "vue";
+import { useTreeCrudPage } from "@/composables/useTreeCrudPage";
 import { getRouterList as getList } from "@/api/router";
 import { doDelete, getTree } from "@/api/menuManagement";
+import CrudToolbar from "@/components/CrudToolbar.vue";
 import Edit from "./components/MenuManagementEdit.vue";
 import VabPageHeader from "@/components/VabPageHeader";
-import { Plus } from "@element-plus/icons-vue";
-import { ElMessage, ElMessageBox } from "element-plus";
 
 export default {
   name: "MenuManagement",
   components: {
+    CrudToolbar,
     Edit,
     VabPageHeader,
-    Plus,
   },
   setup() {
-    const editRef = ref(null);
-    const treeData = ref([]);
     const defaultProps = {
       children: "children",
       label: "label",
     };
-    const list = ref([]);
-    const listLoading = ref(true);
-    const elementLoadingText = ref("正在加载...");
-    let timeOutID = null;
-
-    const handleEdit = (row) => {
-      if (editRef.value) {
-        if (row && row.path) {
-          editRef.value.showEdit(row);
-        } else {
-          editRef.value.showEdit();
-        }
-      }
-    };
-
-    const handleDelete = (row) => {
-      if (row && row.id) {
-        ElMessageBox.confirm("你确定要删除当前项吗", "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        })
-          .then(async () => {
-            const { msg } = await doDelete({ ids: row.id });
-            ElMessage.success(msg);
-            fetchData();
-          })
-          .catch(() => {});
-      }
-    };
-
-    const fetchData = async () => {
-      listLoading.value = true;
-      try {
-        const { data } = await getList();
-        list.value = data || [];
-      } catch (e) {
-        ElMessage.error("菜单列表加载失败，请检查后端接口是否已启动");
-      } finally {
-        timeOutID = setTimeout(() => {
-          listLoading.value = false;
-        }, 300);
-      }
-    };
-
-    const fetchTreeData = async () => {
-      try {
-        const { data } = await getTree();
-        treeData.value = data || [];
-      } catch (e) {
-        ElMessage.error("菜单树加载失败，请检查后端接口是否已启动");
-      }
-    };
-
-    const handleNodeClick = () => {
-      fetchData();
-    };
-
-    onMounted(() => {
-      fetchTreeData();
-      fetchData();
+    const crud = useTreeCrudPage({
+      fetchListFn: getList,
+      fetchTreeFn: getTree,
+      deleteFn: doDelete,
+      fetchListErrorMessage: "菜单列表加载失败，请检查后端接口是否已启动",
+      fetchTreeErrorMessage: "菜单树加载失败，请检查后端接口是否已启动",
     });
 
     return {
-      editRef,
-      treeData,
       defaultProps,
-      list,
-      listLoading,
-      elementLoadingText,
-      handleEdit,
-      handleDelete,
-      fetchData,
-      handleNodeClick,
+      ...crud,
     };
   },
 };
 </script>
-
-<style scoped>
-.query-form {
-  margin: 20px 0;
-}
-</style>

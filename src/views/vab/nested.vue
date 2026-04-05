@@ -15,7 +15,7 @@
               <el-icon class="card-icon"><Folder /></el-icon>
               <h3>一级菜单</h3>
               <p>这是嵌套路由的一级菜单</p>
-              <el-button type="primary" @click="$router.push('/vab/nested/menu1')">
+              <el-button type="primary" @click="$router.push('/examples/nested/menu1')">
                 进入一级菜单
               </el-button>
             </div>
@@ -28,7 +28,7 @@
               <el-icon class="card-icon"><Document /></el-icon>
               <h3>二级菜单</h3>
               <p>这是嵌套路由的二级菜单</p>
-              <el-button type="primary" @click="$router.push('/vab/nested/menu1/menu2')">
+              <el-button type="primary" @click="$router.push('/examples/nested/menu1/menu2')">
                 进入二级菜单
               </el-button>
             </div>
@@ -41,7 +41,7 @@
               <el-icon class="card-icon"><Setting /></el-icon>
               <h3>三级菜单</h3>
               <p>这是嵌套路由的三级菜单</p>
-              <el-button type="primary" @click="$router.push('/vab/nested/menu1/menu2/menu3')">
+              <el-button type="primary" @click="$router.push('/examples/nested/menu1/menu2/menu3')">
                 进入三级菜单
               </el-button>
             </div>

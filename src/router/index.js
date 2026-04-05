@@ -70,13 +70,14 @@ export const asyncRoutes = [
     ],
   }, */
 
+  // 示例页单独分组，避免和可复用系统模块混在一起。
   {
-    path: "/vab",
+    path: "/examples",
     component: Layout,
     redirect: "noRedirect",
-    name: "Vab",
+    name: "Examples",
     alwaysShow: true,
-    meta: { title: "组件", icon: "box-open", defaultOpen: true },
+    meta: { title: "示例中心", icon: "box-open", defaultOpen: true },
     children: [
       {
         path: "vue3Demo",
@@ -145,7 +146,7 @@ export const asyncRoutes = [
         path: "nested",
         component: () => import("@/views/vab/nested.vue"),
         name: "Nested",
-        redirect: "/vab/nested/menu1",
+        redirect: "/examples/nested/menu1",
         meta: {
           title: "嵌套路由",
           permissions: ["admin"],
@@ -155,14 +156,14 @@ export const asyncRoutes = [
             path: "menu1",
             component: () => import("@/views/vab/nested/menu1.vue"),
             name: "Menu1",
-            redirect: "/vab/nested/menu1/menu2",
+            redirect: "/examples/nested/menu1/menu2",
             meta: { title: "一级菜单" },
             children: [
               {
                 path: "menu2",
                 component: () => import("@/views/vab/nested/menu1/menu2.vue"),
                 name: "Menu2",
-                redirect: "/vab/nested/menu1/menu2/menu3",
+                redirect: "/examples/nested/menu1/menu2/menu3",
                 meta: { title: "二级菜单" },
                 children: [
                   {
@@ -348,6 +349,24 @@ export const asyncRoutes = [
         name: "MenuManagement",
         component: () => import("@/views/personnelManagement/menuManagement/index.vue"),
         meta: { title: "菜单管理", icon: "bars", badge: "New" },
+      },
+      {
+        path: "dictManagement",
+        name: "DictManagement",
+        component: () => import("@/views/personnelManagement/dictManagement/index.vue"),
+        meta: { title: "字典管理", icon: "book" },
+      },
+      {
+        path: "configManagement",
+        name: "ConfigManagement",
+        component: () => import("@/views/personnelManagement/configManagement/index.vue"),
+        meta: { title: "系统配置", icon: "sliders-h" },
+      },
+      {
+        path: "operationLog",
+        name: "OperationLog",
+        component: () => import("@/views/personnelManagement/operationLog/index.vue"),
+        meta: { title: "操作日志", icon: "clipboard-list" },
       },
     ],
   },
