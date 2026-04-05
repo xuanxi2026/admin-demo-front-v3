@@ -351,6 +351,12 @@ export const asyncRoutes = [
         meta: { title: "菜单管理", icon: "bars", badge: "New" },
       },
       {
+        path: "departmentManagement",
+        name: "DepartmentManagement",
+        component: () => import("@/views/personnelManagement/departmentManagement/index.vue"),
+        meta: { title: "部门管理", icon: "sitemap" },
+      },
+      {
         path: "dictManagement",
         name: "DictManagement",
         component: () => import("@/views/personnelManagement/dictManagement/index.vue"),
