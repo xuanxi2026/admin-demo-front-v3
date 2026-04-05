@@ -6,16 +6,8 @@
           <div
             style="display: flex; align-items: center; justify-content: center"
           >
-            <a
-              href="https://github.com/zxwk1998/vue-admin-better"
-              target="_blank"
-            >
-              <img
-                src="https://img.shields.io/github/stars/zxwk1998/vue-admin-better?style=flat-square&label=Stars&logo=github"
-                style="margin-right: 10px"
-              />
-            </a>
-            <p v-html="noticeList.notice"></p>
+            <el-tag type="warning" style="margin-right: 10px">公告</el-tag>
+            <p>{{ noticeList.title }}：{{ noticeList.content }}</p>
           </div>
         </el-alert>
       </el-col>
@@ -725,7 +717,7 @@ export default {
       //更新日志
       reverse: true,
       activities: [],
-      noticeList: [],
+      noticeList: null,
       //其他信息
       userAgent: navigator.userAgent,
       //卡片图标
@@ -868,7 +860,7 @@ export default {
     async fetchData() {
       try {
         const res = await getNoticeList();
-        this.noticeList = res.data;
+        this.noticeList = Array.isArray(res.data) ? res.data[0] || null : res.data;
       } catch (error) {
         console.error("获取通知列表失败:", error);
       }

@@ -1,8 +1,5 @@
-import request from '@/utils/request'
+import { getPublishedNotices } from "@/api/noticeManagement";
 
 export function getNoticeList() {
-  return request({
-    url: 'https://api.vuejs-core.cn/getNotice',
-    method: 'get',
-  })
+  return getPublishedNotices({ pageSize: 1 });
 }

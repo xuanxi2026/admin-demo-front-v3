@@ -23,3 +23,12 @@ export function doDelete(data) {
     data,
   });
 }
+
+export function getPublishedNotices(data = {}) {
+  return getList({
+    pageNo: 1,
+    pageSize: 20,
+    status: "published",
+    ...data,
+  });
+}
