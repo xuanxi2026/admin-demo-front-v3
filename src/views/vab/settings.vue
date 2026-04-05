@@ -16,9 +16,6 @@
                 <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
               </el-upload>
             </el-form-item>
-            <el-form-item label="维护模式">
-              <el-switch v-model="basicForm.maintenanceMode" />
-            </el-form-item>
             <el-form-item>
               <el-button :loading="saving.basic" type="primary" @click="saveBasicSettings">保存设置</el-button>
               <el-button @click="loadBasicSettings">重载</el-button>
@@ -36,8 +33,8 @@
             </div>
             <el-alert
               :closable="false"
-              :title="basicForm.maintenanceMode ? '当前已开启维护模式' : '当前为正常访问模式'"
-              :type="basicForm.maintenanceMode ? 'warning' : 'success'"
+              title="当前站点配置预览"
+              type="success"
               show-icon
             />
           </div>
@@ -104,7 +101,6 @@ import {
   fetchSettingsByGroup,
   publicUploadEndpoint,
   saveSettings,
-  toBooleanSetting,
   uploadHeaders as buildUploadHeaders,
 } from "@/api/systemSettings";
 import { applySiteSettings } from "@/utils/siteSettings";
@@ -130,7 +126,6 @@ export default {
         siteName: "",
         description: "",
         logo: "",
-        maintenanceMode: false,
       },
       securityForm: {
         minPasswordLength: 8,
@@ -203,7 +198,6 @@ export default {
         siteName: this.basicConfigMeta["site.title"]?.configValue || "",
         description: this.basicConfigMeta["site.description"]?.configValue || "",
         logo: this.basicConfigMeta["site.logo"]?.configValue || "",
-        maintenanceMode: toBooleanSetting(this.basicConfigMeta["site.maintenance_mode"]?.configValue),
       };
       applySiteSettings(this.basicForm);
     },
@@ -237,7 +231,6 @@ export default {
             "site.title": this.basicForm.siteName,
             "site.description": this.basicForm.description,
             "site.logo": this.basicForm.logo,
-            "site.maintenance_mode": this.basicForm.maintenanceMode,
           })
         );
         await this.loadBasicSettings();
@@ -245,7 +238,6 @@ export default {
           siteName: this.basicForm.siteName,
           description: this.basicForm.description,
           logo: this.basicForm.logo,
-          maintenanceMode: this.basicForm.maintenanceMode,
         });
         document.title = this.basicForm.siteName;
         ElMessage.success("基本设置保存成功");
