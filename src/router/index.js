@@ -197,24 +197,6 @@ export const asyncRoutes = [
         },
       },
       {
-        path: "settings",
-        name: "Settings",
-        component: () => import("@/views/vab/settings.vue"),
-        meta: {
-          title: "系统设置",
-          permissions: ["admin"],
-        },
-      },
-      {
-        path: "notification",
-        name: "Notification",
-        component: () => import("@/views/vab/notification.vue"),
-        meta: {
-          title: "通知中心",
-          permissions: ["admin"],
-        },
-      },
-      {
         path: "calendar",
         name: "Calendar",
         component: () => import("@/views/vab/calendar.vue"),
@@ -325,6 +307,72 @@ export const asyncRoutes = [
     ],
   },
 
+  {
+    path: "/systemSettings",
+    component: Layout,
+    redirect: "/systemSettings/index",
+    name: "SystemSettingsRoot",
+    meta: {
+      title: "系统设置",
+      icon: "sliders-h",
+      permissions: ["admin"],
+    },
+    children: [
+      {
+        path: "index",
+        name: "SystemSettings",
+        component: () => import("@/views/vab/settings.vue"),
+        meta: {
+          title: "系统设置",
+          icon: "sliders-h",
+        },
+      },
+    ],
+  },
+  {
+    path: "/notificationCenter",
+    component: Layout,
+    redirect: "/notificationCenter/index",
+    name: "NotificationCenterRoot",
+    meta: {
+      title: "通知中心",
+      icon: "bell",
+      permissions: ["admin"],
+    },
+    children: [
+      {
+        path: "index",
+        name: "Notification",
+        component: () => import("@/views/vab/notification.vue"),
+        meta: {
+          title: "通知中心",
+          icon: "bell",
+        },
+      },
+    ],
+  },
+  {
+    path: "/account",
+    component: Layout,
+    redirect: "/account/profile",
+    name: "AccountCenter",
+    meta: {
+      title: "个人中心",
+      icon: "user-circle",
+      permissions: ["admin", "editor", "test"],
+    },
+    children: [
+      {
+        path: "profile",
+        name: "PersonalCenter",
+        component: () => import("@/views/account/profile/index.vue"),
+        meta: {
+          title: "个人中心",
+          icon: "user-circle",
+        },
+      },
+    ],
+  },
   {
     path: "/personnelManagement",
     component: Layout,

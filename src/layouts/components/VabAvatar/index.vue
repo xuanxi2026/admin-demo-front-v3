@@ -9,7 +9,7 @@
       </div>
       <div class="user-info">
         <div class="username">{{ username }}</div>
-        <div class="user-role">管理员</div>
+        <div class="user-role">{{ userRole }}</div>
       </div>
       <!-- 直接使用图标组件 -->
       <ArrowDown class="avatar-dropdown-icon" />
@@ -20,8 +20,8 @@
         <div class="dropdown-header">
           <img :src="avatar" alt="用户头像" class="header-avatar" />
           <div class="header-info">
-            <div class="header-username">{{ username }}</div>
-            <div class="header-email">admin@example.com</div>
+            <div class="header-username">{{ profile.nickname || username }}</div>
+            <div class="header-email">{{ profile.email || "未设置邮箱" }}</div>
           </div>
         </div>
 
@@ -37,42 +37,10 @@
           <span>系统设置</span>
         </el-dropdown-item>
 
-        <el-divider></el-divider>
-
-        <el-dropdown-item command="github" class="dropdown-item">
+        <el-dropdown-item command="notification" class="dropdown-item">
           <!-- 直接使用图标组件 -->
           <Link class="dropdown-icon" />
-          <span>GitHub 地址</span>
-        </el-dropdown-item>
-
-        <el-dropdown-item command="gitee" class="dropdown-item">
-          <!-- 直接使用图标组件 -->
-          <Link class="dropdown-icon" />
-          <span>码云地址</span>
-        </el-dropdown-item>
-
-        <el-dropdown-item command="pro" class="dropdown-item">
-          <!-- 直接使用图标组件 -->
-          <Link class="dropdown-icon" />
-          <span>Admin Pro 地址</span>
-        </el-dropdown-item>
-
-        <el-dropdown-item command="plus" class="dropdown-item">
-          <!-- 直接使用图标组件 -->
-          <Link class="dropdown-icon" />
-          <span>Admin Plus 地址</span>
-        </el-dropdown-item>
-
-        <el-dropdown-item command="shop" class="dropdown-item">
-          <!-- 直接使用图标组件 -->
-          <Link class="dropdown-icon" />
-          <span>Shop Vite 地址</span>
-        </el-dropdown-item>
-
-        <el-dropdown-item command="job" class="dropdown-item">
-          <!-- 直接使用图标组件 -->
-          <Link class="dropdown-icon" />
-          <span>好工作就业参考网</span>
+          <span>通知中心</span>
         </el-dropdown-item>
 
         <el-divider></el-divider>
@@ -88,11 +56,11 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted, reactive } from "vue";
 import { useStore } from "vuex";
 import { useRouter, useRoute } from "vue-router";
-import { ElMessage } from "element-plus";
 import { recordRoute } from "@/config";
+import { getProfile } from "@/api/user";
 import {
   ArrowDown,
   User,
@@ -114,6 +82,25 @@ const avatar = computed(() => store.getters["user/avatar"]);
 const username = computed(() => store.getters["user/username"]);
 const layout = computed(() => store.getters["settings/layout"]);
 const isHorizontalLayout = computed(() => layout.value === "horizontal");
+const userRole = computed(() => (store.getters["user/permissions"] || [])[0] || "管理员");
+const profile = reactive({
+  nickname: "",
+  email: "",
+});
+
+const fetchProfile = async () => {
+  try {
+    const { data } = await getProfile();
+    profile.nickname = data.nickname || "";
+    profile.email = data.email || "";
+  } catch (error) {
+    console.error("load profile failed", error);
+  }
+};
+
+onMounted(() => {
+  fetchProfile();
+});
 
 // 方法
 const handleCommand = (command) => {
@@ -127,33 +114,18 @@ const handleCommand = (command) => {
     case "settings":
       settings();
       break;
-    case "github":
-      window.open("https://github.com/zxwk1998/vue-admin-better");
-      break;
-    case "gitee":
-      window.open("https://gitee.com/chu1204505056/vue-admin-better");
-      break;
-    case "pro":
-      window.open("https://vuejs-core.cn/admin-pro/");
-      break;
-    case "plus":
-      window.open("https://vuejs-core.cn/admin-plus/");
-      break;
-    case "shop":
-      window.open("https://vuejs-core.cn/shop-vite/");
-      break;
-    case "job":
-      window.open("https://job.vuejs-core.cn/");
+    case "notification":
+      router.push({ name: "Notification" });
       break;
   }
 };
 
 const personalCenter = () => {
-  router.push("/personalCenter/personalCenter");
+  router.push({ name: "PersonalCenter" });
 };
 
 const settings = () => {
-  ElMessage.info("系统设置功能开发中...");
+  router.push({ name: "SystemSettings" });
 };
 
 const logout = () => {
