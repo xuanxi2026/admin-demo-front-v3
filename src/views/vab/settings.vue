@@ -24,6 +24,23 @@
               <el-button @click="loadBasicSettings">重载</el-button>
             </el-form-item>
           </el-form>
+          <el-divider content-position="left">站点预览</el-divider>
+          <div class="site-preview">
+            <div class="site-preview__header">
+              <img v-if="basicForm.logo" :src="basicForm.logo" alt="logo" class="site-preview__logo" />
+              <div v-else class="site-preview__logo site-preview__logo--placeholder">Logo</div>
+              <div class="site-preview__meta">
+                <div class="site-preview__title">{{ basicForm.siteName || "Admin Demo" }}</div>
+                <div class="site-preview__desc">{{ basicForm.description || "可复用后台管理系统基座" }}</div>
+              </div>
+            </div>
+            <el-alert
+              :closable="false"
+              :title="basicForm.maintenanceMode ? '当前已开启维护模式' : '当前为正常访问模式'"
+              :type="basicForm.maintenanceMode ? 'warning' : 'success'"
+              show-icon
+            />
+          </div>
         </el-tab-pane>
 
         <el-tab-pane label="安全设置" name="security">
@@ -83,9 +100,11 @@
 import { ElMessage } from "element-plus";
 import { Plus } from "@element-plus/icons-vue";
 import {
+  buildSettingsPayload,
   fetchSettingsByGroup,
   publicUploadEndpoint,
   saveSettings,
+  toBooleanSetting,
   uploadHeaders as buildUploadHeaders,
 } from "@/api/systemSettings";
 import { applySiteSettings } from "@/utils/siteSettings";
@@ -175,9 +194,6 @@ export default {
         ElMessage.error(response.msg || "Logo 上传失败");
       }
     },
-    toBool(value) {
-      return String(value) === "true";
-    },
     async loadAllSettings() {
       await Promise.all([this.loadBasicSettings(), this.loadSecuritySettings(), this.loadEmailSettings()]);
     },
@@ -187,15 +203,16 @@ export default {
         siteName: this.basicConfigMeta["site.title"]?.configValue || "",
         description: this.basicConfigMeta["site.description"]?.configValue || "",
         logo: this.basicConfigMeta["site.logo"]?.configValue || "",
-        maintenanceMode: this.toBool(this.basicConfigMeta["site.maintenance_mode"]?.configValue),
+        maintenanceMode: toBooleanSetting(this.basicConfigMeta["site.maintenance_mode"]?.configValue),
       };
+      applySiteSettings(this.basicForm);
     },
     async loadSecuritySettings() {
       this.securityConfigMeta = await fetchSettingsByGroup("security");
       this.securityForm = {
         minPasswordLength: Number(this.securityConfigMeta["security.password_min_length"]?.configValue || 8),
-        loginCaptcha: this.toBool(this.securityConfigMeta["security.login_captcha"]?.configValue),
-        twoFactorAuth: this.toBool(this.securityConfigMeta["security.two_factor_auth"]?.configValue),
+        loginCaptcha: toBooleanSetting(this.securityConfigMeta["security.login_captcha"]?.configValue),
+        twoFactorAuth: toBooleanSetting(this.securityConfigMeta["security.two_factor_auth"]?.configValue),
         sessionTimeout: Number(this.securityConfigMeta["security.session_timeout"]?.configValue || 30),
         maxLoginAttempts: Number(this.securityConfigMeta["security.max_login_attempts"]?.configValue || 5),
       };
@@ -210,24 +227,13 @@ export default {
         senderEmail: this.emailConfigMeta["email.sender_email"]?.configValue || "",
       };
     },
-    buildConfigPayload(metaMap, values) {
-      return Object.entries(values).map(([key, configValue]) => ({
-        id: metaMap[key]?.id || "",
-        configKey: key,
-        configValue: String(configValue),
-        group: metaMap[key]?.group || key.split(".")[0],
-        name: metaMap[key]?.name || key,
-        valueType: metaMap[key]?.valueType || "string",
-        remark: metaMap[key]?.remark || "",
-      }));
-    },
     async saveBasicSettings() {
       const valid = await this.$refs.basicFormRef.validate().catch(() => false);
       if (!valid) return;
       this.saving.basic = true;
       try {
         await saveSettings(
-          this.buildConfigPayload(this.basicConfigMeta, {
+          buildSettingsPayload(this.basicConfigMeta, {
             "site.title": this.basicForm.siteName,
             "site.description": this.basicForm.description,
             "site.logo": this.basicForm.logo,
@@ -253,7 +259,7 @@ export default {
       this.saving.security = true;
       try {
         await saveSettings(
-          this.buildConfigPayload(this.securityConfigMeta, {
+          buildSettingsPayload(this.securityConfigMeta, {
             "security.password_min_length": this.securityForm.minPasswordLength,
             "security.login_captcha": this.securityForm.loginCaptcha,
             "security.two_factor_auth": this.securityForm.twoFactorAuth,
@@ -273,7 +279,7 @@ export default {
       this.saving.email = true;
       try {
         await saveSettings(
-          this.buildConfigPayload(this.emailConfigMeta, {
+          buildSettingsPayload(this.emailConfigMeta, {
             "email.smtp_server": this.emailForm.smtpServer,
             "email.smtp_port": this.emailForm.smtpPort,
             "email.username": this.emailForm.username,
@@ -324,5 +330,46 @@ export default {
   height: 120px;
   border: 1px dashed #d9d9d9;
   border-radius: 12px;
+}
+
+.site-preview {
+  max-width: 640px;
+}
+
+.site-preview__header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 12px;
+}
+
+.site-preview__logo {
+  display: flex;
+  width: 64px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  object-fit: cover;
+  border-radius: 14px;
+  background: var(--el-fill-color-light);
+}
+
+.site-preview__logo--placeholder {
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+}
+
+.site-preview__title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.site-preview__desc {
+  margin-top: 6px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.6;
 }
 </style>
