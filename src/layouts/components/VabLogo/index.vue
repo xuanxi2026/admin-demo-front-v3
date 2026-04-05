@@ -2,8 +2,9 @@
   <div :class="'logo-container-' + layout">
     <router-link to="/">
       <!-- 这里是logo变更的位置 -->
+      <img v-if="logoUrl" :src="logoUrl" alt="logo" class="site-logo-image" />
       <svg
-        v-if="logo"
+        v-else-if="logo"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         class="logo"
@@ -25,12 +26,14 @@
 </template>
 <script>
 import { mapGetters } from "vuex";
+import { SITE_SETTINGS_EVENT, getRuntimeLogo, getRuntimeTitle, refreshSiteSettings } from "@/utils/siteSettings";
 
 export default {
   name: "VabLogo",
   data() {
     return {
-      title: this.$baseTitle,
+      title: getRuntimeTitle(),
+      logoUrl: getRuntimeLogo(),
     };
   },
   computed: {
@@ -38,6 +41,24 @@ export default {
       logo: "settings/logo",
       layout: "settings/layout",
     }),
+  },
+  created() {
+    refreshSiteSettings()
+      .then(({ siteName, logo }) => {
+        this.title = siteName;
+        this.logoUrl = logo;
+      })
+      .catch(() => {});
+    window.$eventBus?.on(SITE_SETTINGS_EVENT, this.handleSiteSettingsChange);
+  },
+  beforeUnmount() {
+    window.$eventBus?.off(SITE_SETTINGS_EVENT, this.handleSiteSettingsChange);
+  },
+  methods: {
+    handleSiteSettingsChange(settings = {}) {
+      this.title = settings.siteName || getRuntimeTitle();
+      this.logoUrl = settings.logo || "";
+    },
   },
 };
 </script>
@@ -74,6 +95,12 @@ export default {
 .logo-container-horizontal {
   @include container;
 
+  .site-logo-image {
+    @include logo;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
   .logo {
     @include logo;
   }
@@ -89,6 +116,12 @@ export default {
   height: $base-logo-height;
   line-height: $base-logo-height;
   text-align: center;
+
+  .site-logo-image {
+    @include logo;
+    border-radius: 6px;
+    object-fit: cover;
+  }
 
   .logo {
     @include logo;

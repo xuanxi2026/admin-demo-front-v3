@@ -393,7 +393,7 @@ export const asyncRoutes = [
         path: "roleManagement",
         name: "RoleManagement",
         component: () => import("@/views/personnelManagement/roleManagement/index.vue"),
-        meta: { title: "角色管理", icon: "shield" },
+        meta: { title: "角色管理", icon: "user-shield" },
       },
       {
         path: "menuManagement",

@@ -88,6 +88,7 @@ import {
   saveSettings,
   uploadHeaders as buildUploadHeaders,
 } from "@/api/systemSettings";
+import { applySiteSettings } from "@/utils/siteSettings";
 
 export default {
   name: "Settings",
@@ -234,6 +235,13 @@ export default {
           })
         );
         await this.loadBasicSettings();
+        applySiteSettings({
+          siteName: this.basicForm.siteName,
+          description: this.basicForm.description,
+          logo: this.basicForm.logo,
+          maintenanceMode: this.basicForm.maintenanceMode,
+        });
+        document.title = this.basicForm.siteName;
         ElMessage.success("基本设置保存成功");
       } finally {
         this.saving.basic = false;
